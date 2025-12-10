@@ -27,11 +27,11 @@ sys.path.append('{}/third_party/Matcha-TTS'.format(ROOT_DIR))
 
 from modelscope import snapshot_download, HubApi
 
-api = HubApi()
-_, cookies = api.login(access_token=os.environ['token'])
-snapshot_download('FunAudioLLM/Fun-CosyVoice3-0.5B', local_dir='pretrained_models/Fun-CosyVoice3-0.5B', cookies=cookies)
-snapshot_download('iic/SenseVoiceSmall', local_dir='pretrained_models/SenseVoiceSmall', cookies=cookies)
-snapshot_download('iic/CosyVoice-ttsfrd', local_dir='pretrained_models/CosyVoice-ttsfrd', cookies=cookies)
+# api = HubApi()
+# _, cookies = api.login(access_token=os.environ['token'])
+# snapshot_download('FunAudioLLM/Fun-CosyVoice3-0.5B', local_dir='pretrained_models/Fun-CosyVoice3-0.5B', cookies=cookies)
+# snapshot_download('iic/SenseVoiceSmall', local_dir='pretrained_models/SenseVoiceSmall', cookies=cookies)
+# snapshot_download('iic/CosyVoice-ttsfrd', local_dir='pretrained_models/CosyVoice-ttsfrd', cookies=cookies)
 os.system('cd pretrained_models/CosyVoice-ttsfrd/ && pip install ttsfrd_dependency-0.1-py3-none-any.whl && pip install ttsfrd-0.4.2-cp310-cp310-linux_x86_64.whl && apt install -y unzip && unzip resource.zip -d .')
 
 from cosyvoice.cli.cosyvoice import AutoModel as CosyVoiceAutoModel
@@ -181,7 +181,7 @@ def main():
 
 
 if __name__ == '__main__':
-    cosyvoice = CosyVoiceAutoModel(model_dir='pretrained_models/Fun-CosyVoice3-0.5B', load_trt=True, load_vllm=True, fp16=False)
+    cosyvoice = CosyVoiceAutoModel(model_dir='pretrained_models/Fun-CosyVoice3-0.5B', load_trt=True, fp16=False)
     sft_spk = cosyvoice.list_available_spks()
     for stream in [False]:
         for i, j in enumerate(cosyvoice.inference_zero_shot('收到好友从远方寄来的生日礼物，那份意外的惊喜与深深的祝福让我心中充满了甜蜜的快乐，笑容如花儿般绽放。', 'You are a helpful assistant.<|endofprompt|>希望你以后能够做的比我还好呦。', 'zero_shot_prompt.wav', stream=stream)):
