@@ -43,4 +43,4 @@ uvicorn==0.30.0
 wetext==0.0.4
 wget==3.2
 funasr==1.2.0
-onnxconverter-common==1.14.0
+onnxconverter-common
