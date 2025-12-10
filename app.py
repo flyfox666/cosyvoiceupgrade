@@ -25,13 +25,17 @@ from funasr.utils.postprocess_utils import rich_transcription_postprocess
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append('{}/third_party/Matcha-TTS'.format(ROOT_DIR))
 
-from modelscope import snapshot_download
-snapshot_download('iic/CosyVoice2-0.5B', local_dir='pretrained_models/CosyVoice2-0.5B')
-snapshot_download('iic/CosyVoice-ttsfrd', local_dir='pretrained_models/CosyVoice-ttsfrd')
+from modelscope import snapshot_download, HubApi
+
+api = HubApi()
+_, cookies = api.login(access_token=os.environ['token'])
+snapshot_download('FunAudioLLM/Fun-CosyVoice3-0.5B', local_dir='pretrained_models/Fun-CosyVoice3-0.5B', cookies=cookies)
+snapshot_download('iic/SenseVoiceSmall', local_dir='pretrained_models/SenseVoiceSmall', cookies=cookies)
+snapshot_download('iic/CosyVoice-ttsfrd', local_dir='pretrained_models/CosyVoice-ttsfrd', cookies=cookies)
 os.system('cd pretrained_models/CosyVoice-ttsfrd/ && pip install ttsfrd_dependency-0.1-py3-none-any.whl && pip install ttsfrd-0.4.2-cp310-cp310-linux_x86_64.whl && apt install -y unzip && unzip resource.zip -d .')
 
-from cosyvoice.cli.cosyvoice import CosyVoice2
-from cosyvoice.utils.file_utils import load_wav, logger
+from cosyvoice.cli.cosyvoice import AutoModel
+from cosyvoice.utils.file_utils import logger
 from cosyvoice.utils.common import set_all_random_seed
 
 inference_mode_list = ['3s极速复刻', '自然语言控制']
@@ -93,18 +97,6 @@ def generate_audio(tts_text, mode_checkbox_group, prompt_text, prompt_wav_upload
         if prompt_wav is None:
             gr.Info('您正在使用自然语言控制模式, 请输入prompt音频')
             return (target_sr, default_data)
-    # if cross_lingual mode, please make sure that model is iic/CosyVoice-300M and tts_text prompt_text are different language
-    if mode_checkbox_group in ['跨语种复刻']:
-        if cosyvoice.frontend.instruct is True:
-            gr.Warning('您正在使用跨语种复刻模式, {}模型不支持此模式, 请使用iic/CosyVoice-300M模型'.format(args.model_dir))
-            return (target_sr, default_data)
-        if instruct_text != '':
-            gr.Info('您正在使用跨语种复刻模式, instruct文本会被忽略')
-            return (target_sr, default_data)
-        if prompt_wav is None:
-            gr.Warning('您正在使用跨语种复刻模式, 请提供prompt音频')
-            return (target_sr, default_data)
-        gr.Info('您正在使用跨语种复刻模式, 请确保合成文本和prompt文本为不同语言')
     # if in zero_shot cross_lingual, please make sure that prompt_text and prompt_wav meets requirements
     if mode_checkbox_group in ['3s极速复刻', '跨语种复刻']:
         if prompt_wav is None:
@@ -117,10 +109,6 @@ def generate_audio(tts_text, mode_checkbox_group, prompt_text, prompt_wav_upload
         if info.num_frames / info.sample_rate > 10:
             gr.Warning('请限制输入音频在10s内，避免推理效果过低')
             return (target_sr, default_data)
-    # sft mode only use sft_dropdown
-    if mode_checkbox_group in ['预训练音色']:
-        if instruct_text != '' or prompt_wav is not None or prompt_text != '':
-            gr.Info('您正在使用预训练音色模式，prompt文本/prompt音频/instruct文本会被忽略！')
     # zero_shot mode only use prompt_wav prompt text
     if mode_checkbox_group in ['3s极速复刻']:
         if prompt_text == '':
@@ -132,14 +120,7 @@ def generate_audio(tts_text, mode_checkbox_group, prompt_text, prompt_wav_upload
         if info.num_frames / info.sample_rate > 10:
             gr.Warning('请限制输入音频在10s内，避免推理效果过低')
             return (target_sr, default_data)
-    if mode_checkbox_group == '预训练音色':
-        logger.info('get sft inference request')
-        set_all_random_seed(seed)
-        speech_list = []
-        for i in cosyvoice.inference_sft(tts_text, sft_dropdown, stream=stream, speed=speed):
-            speech_list.append(i['tts_speech'])
-        return (target_sr, torch.concat(speech_list, dim=1).numpy().flatten())
-    elif mode_checkbox_group == '3s极速复刻':
+    if mode_checkbox_group == '3s极速复刻':
         logger.info('get zero_shot inference request')
         prompt_speech_16k = postprocess(load_wav(prompt_wav, prompt_sr))
         set_all_random_seed(seed)
@@ -168,7 +149,8 @@ def generate_audio(tts_text, mode_checkbox_group, prompt_text, prompt_wav_upload
 def main():
     with gr.Blocks() as demo:
         gr.Markdown("### 代码库 [CosyVoice](https://github.com/FunAudioLLM/CosyVoice) \
-                    预训练模型 [CosyVoice2-0.5B](https://www.modelscope.cn/models/iic/CosyVoice2-0.5B) \
+                    预训练模型 [Fun-CosyVoice3-0.5B](https://www.modelscope.cn/models/FunAudioLLM/Fun-CosyVoice3-0.5B) \
+                    [CosyVoice2-0.5B](https://www.modelscope.cn/models/iic/CosyVoice2-0.5B) \
                     [CosyVoice-300M](https://www.modelscope.cn/models/iic/CosyVoice-300M) \
                     [CosyVoice-300M-Instruct](https://www.modelscope.cn/models/iic/CosyVoice-300M-Instruct) \
                     [CosyVoice-300M-SFT](https://www.modelscope.cn/models/iic/CosyVoice-300M-SFT)")
@@ -205,20 +187,15 @@ def main():
 
 
 if __name__ == '__main__':
-    load_jit = True if os.environ.get('jit') == '1' else False
-    load_trt = True if os.environ.get('trt') == '1' else False
-    fp16 = True if os.environ.get('fp16') == '1' else False
-    logger.info('cosyvoice args load_jit {} load_trt {} fp16 {}'.format(load_jit, load_trt, fp16))
-    cosyvoice = CosyVoice2('pretrained_models/CosyVoice2-0.5B', load_jit=load_jit, load_trt=load_trt, fp16=fp16)
+    cosyvoice = AutoModel(model_dir='pretrained_models/Fun-CosyVoice3-0.5B')
     sft_spk = cosyvoice.list_available_spks()
-    prompt_speech_16k = load_wav('zero_shot_prompt.wav', 16000)
     for stream in [False]:
-        for i, j in enumerate(cosyvoice.inference_zero_shot('收到好友从远方寄来的生日礼物，那份意外的惊喜与深深的祝福让我心中充满了甜蜜的快乐，笑容如花儿般绽放。', '希望你以后能够做的比我还好呦。', prompt_speech_16k, stream=stream)):
+        for i, j in enumerate(cosyvoice.inference_zero_shot('收到好友从远方寄来的生日礼物，那份意外的惊喜与深深的祝福让我心中充满了甜蜜的快乐，笑容如花儿般绽放。', 'You are a helpful assistant.<|endofprompt|>希望你以后能够做的比我还好呦。', 'zero_shot_prompt.wav', stream=stream)):
             continue
     prompt_sr, target_sr = 16000, 24000
     default_data = np.zeros(target_sr)
 
-    model_dir = "iic/SenseVoiceSmall"
+    model_dir = "pretrained_models/SenseVoiceSmall"
     asr_model = AutoModel(
         model=model_dir,
         disable_update=True,
