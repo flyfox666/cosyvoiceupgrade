@@ -44,3 +44,4 @@ wetext==0.0.4
 wget==3.2
 funasr==1.2.0
 onnxconverter-common
+x-transformers==2.3.5
