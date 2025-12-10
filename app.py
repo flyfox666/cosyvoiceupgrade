@@ -115,7 +115,7 @@ def generate_audio(tts_text, mode_checkbox_group, prompt_text, prompt_wav_upload
             gr.Warning('prompt文本为空，您是否忘记输入prompt文本？')
             return (target_sr, default_data)
         if instruct_text != '':
-            gr.Info('您正在使用3s极速复刻模式，预训练音色/instruct文本会被忽略！')
+            gr.Info('您正在使用3s极速复刻模式，instruct文本会被忽略！')
         info = torchaudio.info(prompt_wav)
         if info.num_frames / info.sample_rate > 10:
             gr.Warning('请限制输入音频在10s内，避免推理效果过低')
@@ -129,7 +129,6 @@ def generate_audio(tts_text, mode_checkbox_group, prompt_text, prompt_wav_upload
         return (target_sr, torch.concat(speech_list, dim=1).numpy().flatten())
     elif mode_checkbox_group == '自然语言控制':
         logging.info('get instruct inference request')
-        prompt_speech_16k = postprocess(load_wav(prompt_wav, prompt_sr))
         set_all_random_seed(seed)
         speech_list = []
         for i in cosyvoice.inference_instruct2(tts_text, instruct_text, prompt_wav, stream=stream, speed=speed):
