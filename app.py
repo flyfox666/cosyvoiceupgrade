@@ -34,9 +34,9 @@ snapshot_download('iic/SenseVoiceSmall', local_dir='pretrained_models/SenseVoice
 snapshot_download('iic/CosyVoice-ttsfrd', local_dir='pretrained_models/CosyVoice-ttsfrd', cookies=cookies)
 os.system('cd pretrained_models/CosyVoice-ttsfrd/ && pip install ttsfrd_dependency-0.1-py3-none-any.whl && pip install ttsfrd-0.4.2-cp310-cp310-linux_x86_64.whl && apt install -y unzip && unzip resource.zip -d .')
 
-from cosyvoice.cli.cosyvoice import AutoModel
-from cosyvoice.utils.file_utils import logger
-from cosyvoice.utils.common import set_all_random_seed
+from cosyvoice.cli.cosyvoice import AutoModel as CosyVoiceAutoModel
+from cosyvoice.utils.file_utils import logging
+from cosyvoice.utils.common import set_all_random_seed, instruct_list
 
 inference_mode_list = ['3s极速复刻', '自然语言控制']
 instruct_dict = {'3s极速复刻': '1. 选择prompt音频文件，或录入prompt音频，注意不超过30s，若同时提供，优先选择prompt音频文件\n2. 输入prompt文本\n3. 点击生成音频按钮',
@@ -121,29 +121,22 @@ def generate_audio(tts_text, mode_checkbox_group, prompt_text, prompt_wav_upload
             gr.Warning('请限制输入音频在10s内，避免推理效果过低')
             return (target_sr, default_data)
     if mode_checkbox_group == '3s极速复刻':
-        logger.info('get zero_shot inference request')
-        prompt_speech_16k = postprocess(load_wav(prompt_wav, prompt_sr))
+        logging.info('get zero_shot inference request')
         set_all_random_seed(seed)
         speech_list = []
-        for i in cosyvoice.inference_zero_shot(tts_text, prompt_text, prompt_speech_16k, stream=stream, speed=speed):
+        for i in cosyvoice.inference_zero_shot(tts_text, 'You are a helpful assistant.<|endofprompt|>' + prompt_text, prompt_wav, stream=stream, speed=speed):
             speech_list.append(i['tts_speech'])
         return (target_sr, torch.concat(speech_list, dim=1).numpy().flatten())
-    elif mode_checkbox_group == '跨语种复刻':
-        logger.info('get cross_lingual inference request')
+    elif mode_checkbox_group == '自然语言控制':
+        logging.info('get instruct inference request')
         prompt_speech_16k = postprocess(load_wav(prompt_wav, prompt_sr))
         set_all_random_seed(seed)
         speech_list = []
-        for i in cosyvoice.inference_cross_lingual(tts_text, prompt_speech_16k, stream=stream, speed=speed):
+        for i in cosyvoice.inference_instruct2(tts_text, instruct_text, prompt_wav, stream=stream, speed=speed):
             speech_list.append(i['tts_speech'])
         return (target_sr, torch.concat(speech_list, dim=1).numpy().flatten())
     else:
-        logger.info('get instruct inference request')
-        prompt_speech_16k = postprocess(load_wav(prompt_wav, prompt_sr))
-        set_all_random_seed(seed)
-        speech_list = []
-        for i in cosyvoice.inference_instruct2(tts_text, instruct_text, prompt_speech_16k, stream=stream, speed=speed):
-            speech_list.append(i['tts_speech'])
-        return (target_sr, torch.concat(speech_list, dim=1).numpy().flatten())
+        gr.Warning('无效的模式选择')
 
 
 def main():
@@ -169,7 +162,8 @@ def main():
             prompt_wav_upload = gr.Audio(sources='upload', type='filepath', label='选择prompt音频文件，注意采样率不低于16khz')
             prompt_wav_record = gr.Audio(sources='microphone', type='filepath', label='录制prompt音频文件')
         prompt_text = gr.Textbox(label="prompt文本", lines=1, placeholder="请输入prompt文本，支持自动识别，您可以自行修正识别结果...", value='')
-        instruct_text = gr.Textbox(label="输入instruct文本", lines=1, placeholder="请输入instruct文本.例如:用四川话说这句话。", value='')
+        # instruct_text = gr.Textbox(label="输入instruct文本", lines=1, placeholder="请输入instruct文本.例如:用四川话说这句话。", value='')
+        instruct_text = gr.Radio(choices=instruct_list, label='选择instruct文本', value=instruct_list[0])
 
         generate_button = gr.Button("生成音频")
 
@@ -187,7 +181,7 @@ def main():
 
 
 if __name__ == '__main__':
-    cosyvoice = AutoModel(model_dir='pretrained_models/Fun-CosyVoice3-0.5B')
+    cosyvoice = CosyVoiceAutoModel(model_dir='pretrained_models/Fun-CosyVoice3-0.5B', load_trt=True, load_vllm=True, fp16=False)
     sft_spk = cosyvoice.list_available_spks()
     for stream in [False]:
         for i, j in enumerate(cosyvoice.inference_zero_shot('收到好友从远方寄来的生日礼物，那份意外的惊喜与深深的祝福让我心中充满了甜蜜的快乐，笑容如花儿般绽放。', 'You are a helpful assistant.<|endofprompt|>希望你以后能够做的比我还好呦。', 'zero_shot_prompt.wav', stream=stream)):
