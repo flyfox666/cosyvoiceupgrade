@@ -52,8 +52,11 @@ def generate_seed():
         "value": seed
     }
 
-
-def postprocess(speech, top_db=60, hop_length=220, win_length=440):
+top_db = 60
+hop_length = 220
+win_length = 440
+def postprocess(wav):
+    speech, sample_rate = torchaudio.load(wav, backend='soundfile')
     speech, _ = librosa.effects.trim(
         speech, top_db=top_db,
         frame_length=win_length,
@@ -62,7 +65,8 @@ def postprocess(speech, top_db=60, hop_length=220, win_length=440):
     if speech.abs().max() > max_val:
         speech = speech / speech.abs().max() * max_val
     speech = torch.concat([speech, torch.zeros(1, int(target_sr * 0.2))], dim=1)
-    return speech
+    torchaudio.save(wav, speech, sample_rate)
+    return wav
 
 
 def change_instruction(mode_checkbox_group):
@@ -124,14 +128,14 @@ def generate_audio(tts_text, mode_checkbox_group, prompt_text, prompt_wav_upload
         logging.info('get zero_shot inference request')
         set_all_random_seed(seed)
         speech_list = []
-        for i in cosyvoice.inference_zero_shot(tts_text, 'You are a helpful assistant.<|endofprompt|>' + prompt_text, prompt_wav, stream=stream, speed=speed):
+        for i in cosyvoice.inference_zero_shot(tts_text, 'You are a helpful assistant.<|endofprompt|>' + prompt_text, postprocess(prompt_wav), stream=stream, speed=speed):
             speech_list.append(i['tts_speech'])
         return (target_sr, torch.concat(speech_list, dim=1).numpy().flatten())
     elif mode_checkbox_group == '自然语言控制':
         logging.info('get instruct inference request')
         set_all_random_seed(seed)
         speech_list = []
-        for i in cosyvoice.inference_instruct2(tts_text, instruct_text, prompt_wav, stream=stream, speed=speed):
+        for i in cosyvoice.inference_instruct2(tts_text, instruct_text, postprocess(prompt_wav), stream=stream, speed=speed):
             speech_list.append(i['tts_speech'])
         return (target_sr, torch.concat(speech_list, dim=1).numpy().flatten())
     else:
@@ -148,7 +152,7 @@ def main():
                     [CosyVoice-300M-SFT](https://www.modelscope.cn/models/iic/CosyVoice-300M-SFT)")
         gr.Markdown("#### 请输入需要合成的文本，选择推理模式，并按照提示步骤进行操作")
 
-        tts_text = gr.Textbox(label="输入合成文本", lines=1, value="CosyVoice迎来全面升级，提供更准、更稳、更快、 更好的语音生成能力。CosyVoice is undergoing a comprehensive upgrade, providing more accurate, stable, faster, and better voice generation capabilities.")
+        tts_text = gr.Textbox(label="输入合成文本", lines=1, value="Her handwriting is [M][AY0][N][UW1][T]并且很整洁，说明她[h][ào]干净。")
         with gr.Row():
             mode_checkbox_group = gr.Radio(choices=inference_mode_list, label='选择推理模式', value=inference_mode_list[0])
             instruction_text = gr.Text(label="操作步骤", value=instruct_dict[inference_mode_list[0]], scale=0.5)
@@ -161,8 +165,7 @@ def main():
             prompt_wav_upload = gr.Audio(sources='upload', type='filepath', label='选择prompt音频文件，注意采样率不低于16khz')
             prompt_wav_record = gr.Audio(sources='microphone', type='filepath', label='录制prompt音频文件')
         prompt_text = gr.Textbox(label="prompt文本", lines=1, placeholder="请输入prompt文本，支持自动识别，您可以自行修正识别结果...", value='')
-        # instruct_text = gr.Textbox(label="输入instruct文本", lines=1, placeholder="请输入instruct文本.例如:用四川话说这句话。", value='')
-        instruct_text = gr.Radio(choices=instruct_list, label='选择instruct文本', value=instruct_list[0])
+        instruct_text = gr.Dropdown(choices=instruct_list, label='选择instruct文本', value=instruct_list[0])
 
         generate_button = gr.Button("生成音频")
 
