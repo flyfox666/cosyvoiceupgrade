@@ -35,7 +35,7 @@ snapshot_download('iic/CosyVoice-ttsfrd', local_dir='pretrained_models/CosyVoice
 os.system('cd pretrained_models/CosyVoice-ttsfrd/ && pip install ttsfrd_dependency-0.1-py3-none-any.whl && pip install ttsfrd-0.4.2-cp310-cp310-linux_x86_64.whl && apt install -y unzip && rm -rf resource && unzip resource.zip -d .')
 
 from cosyvoice.cli.cosyvoice import AutoModel as CosyVoiceAutoModel
-from cosyvoice.utils.file_utils import logging
+from cosyvoice.utils.file_utils import logging, load_wav
 from cosyvoice.utils.common import set_all_random_seed, instruct_list
 
 inference_mode_list = ['3s极速复刻', '自然语言控制']
@@ -56,7 +56,7 @@ top_db = 60
 hop_length = 220
 win_length = 440
 def postprocess(wav):
-    speech, sample_rate = torchaudio.load(wav, backend='soundfile')
+    speech = load_wav(wav, target_sr=target_sr, min_sr=16000)
     speech, _ = librosa.effects.trim(
         speech, top_db=top_db,
         frame_length=win_length,
@@ -65,7 +65,7 @@ def postprocess(wav):
     if speech.abs().max() > max_val:
         speech = speech / speech.abs().max() * max_val
     speech = torch.concat([speech, torch.zeros(1, int(target_sr * 0.2))], dim=1)
-    torchaudio.save(wav, speech, sample_rate)
+    torchaudio.save(wav, speech, target_sr)
     return wav
 
 
