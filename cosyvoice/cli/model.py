@@ -38,9 +38,6 @@ class CosyVoiceModel:
         self.flow = flow
         self.hift = hift
         self.fp16 = fp16
-        if self.fp16 is True:
-            self.llm.half()
-            self.flow.half()
         self.token_min_hop_len = 2 * self.flow.input_frame_rate
         self.token_max_hop_len = 4 * self.flow.input_frame_rate
         self.token_overlap_len = 20
@@ -249,9 +246,6 @@ class CosyVoice2Model(CosyVoiceModel):
         self.flow = flow
         self.hift = hift
         self.fp16 = fp16
-        if self.fp16 is True:
-            self.llm.half()
-            self.flow.half()
         # NOTE must matching training static_chunk_size
         self.token_hop_len = 25
         # hift cache
@@ -398,9 +392,6 @@ class CosyVoice3Model(CosyVoice2Model):
         self.flow = flow
         self.hift = hift
         self.fp16 = fp16
-        if self.fp16 is True:
-            self.llm.half()
-            self.flow.half()
         # NOTE must matching training static_chunk_size
         self.token_hop_len = 25
         # rtf and decoding related
@@ -422,18 +413,18 @@ class CosyVoice3Model(CosyVoice2Model):
                                              embedding=embedding.to(self.device),
                                              streaming=stream,
                                              finalize=finalize)
-        tts_mel = tts_mel[:, :, token_offset * self.flow.token_mel_ratio:]
-        # append mel cache
-        if self.hift_cache_dict[uuid] is not None:
-            hift_cache_mel = self.hift_cache_dict[uuid]['mel']
-            tts_mel = torch.concat([hift_cache_mel, tts_mel], dim=2)
-            self.hift_cache_dict[uuid]['mel'] = tts_mel
-        else:
-            self.hift_cache_dict[uuid] = {'mel': tts_mel, 'speech_offset': 0}
-        if speed != 1.0:
-            assert token_offset == 0 and finalize is True, 'speed change only support non-stream inference mode'
-            tts_mel = F.interpolate(tts_mel, size=int(tts_mel.shape[2] / speed), mode='linear')
-        tts_speech, _ = self.hift.inference(speech_feat=tts_mel, finalize=finalize)
-        tts_speech = tts_speech[:, self.hift_cache_dict[uuid]['speech_offset']:]
-        self.hift_cache_dict[uuid]['speech_offset'] += tts_speech.shape[1]
+            tts_mel = tts_mel[:, :, token_offset * self.flow.token_mel_ratio:]
+            # append mel cache
+            if self.hift_cache_dict[uuid] is not None:
+                hift_cache_mel = self.hift_cache_dict[uuid]['mel']
+                tts_mel = torch.concat([hift_cache_mel, tts_mel], dim=2)
+                self.hift_cache_dict[uuid]['mel'] = tts_mel
+            else:
+                self.hift_cache_dict[uuid] = {'mel': tts_mel, 'speech_offset': 0}
+            if speed != 1.0:
+                assert token_offset == 0 and finalize is True, 'speed change only support non-stream inference mode'
+                tts_mel = F.interpolate(tts_mel, size=int(tts_mel.shape[2] / speed), mode='linear')
+            tts_speech, _ = self.hift.inference(speech_feat=tts_mel, finalize=finalize)
+            tts_speech = tts_speech[:, self.hift_cache_dict[uuid]['speech_offset']:]
+            self.hift_cache_dict[uuid]['speech_offset'] += tts_speech.shape[1]
         return tts_speech
