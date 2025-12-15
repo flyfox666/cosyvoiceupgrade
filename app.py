@@ -29,7 +29,7 @@ from modelscope import snapshot_download, HubApi
 
 api = HubApi()
 _, cookies = api.login(access_token=os.environ['token'])
-snapshot_download('FunAudioLLM/Fun-CosyVoice3-0.5B', local_dir='pretrained_models/Fun-CosyVoice3-0.5B', cookies=cookies)
+snapshot_download('FunAudioLLM/Fun-CosyVoice3-0.5B-2512', local_dir='pretrained_models/Fun-CosyVoice3-0.5B', cookies=cookies)
 snapshot_download('iic/SenseVoiceSmall', local_dir='pretrained_models/SenseVoiceSmall', cookies=cookies)
 snapshot_download('iic/CosyVoice-ttsfrd', local_dir='pretrained_models/CosyVoice-ttsfrd', cookies=cookies)
 os.system('cd pretrained_models/CosyVoice-ttsfrd/ && pip install ttsfrd_dependency-0.1-py3-none-any.whl && pip install ttsfrd-0.4.2-cp310-cp310-linux_x86_64.whl && apt install -y unzip && rm -rf resource && unzip resource.zip -d .')
