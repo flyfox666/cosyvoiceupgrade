@@ -39,8 +39,8 @@ from cosyvoice.utils.file_utils import logging, load_wav
 from cosyvoice.utils.common import set_all_random_seed, instruct_list
 
 inference_mode_list = ['3s极速复刻', '自然语言控制']
-instruct_dict = {'3s极速复刻': '1. 选择prompt音频文件，或录入prompt音频，注意不超过30s，若同时提供，优先选择prompt音频文件\n2. 输入prompt文本\n3. 点击生成音频按钮',
-                 '自然语言控制': '1. 选择prompt音频文件，或录入prompt音频，注意不超过30s，若同时提供，优先选择prompt音频文件\n2. 输入instruct文本\n3. 点击生成音频按钮'}
+instruct_dict = {'3s极速复刻': '1. 选择prompt音频文件，或录入prompt音频，注意不超过15s，若同时提供，优先选择prompt音频文件\n2. 输入prompt文本\n3. 点击生成音频按钮',
+                 '自然语言控制': '1. 选择prompt音频文件，或录入prompt音频，注意不超过15s，若同时提供，优先选择prompt音频文件\n2. 输入instruct文本\n3. 点击生成音频按钮'}
 stream_mode_list = [('否', False)]
 max_val = 0.8
 
@@ -130,8 +130,8 @@ def generate_audio(tts_text, mode_checkbox_group, prompt_text, prompt_wav_upload
         if info.sample_rate < prompt_sr:
             gr.Warning('prompt音频采样率{}低于{}'.format(torchaudio.info(prompt_wav).sample_rate, prompt_sr))
             return (target_sr, default_data)
-        if info.num_frames / info.sample_rate > 10:
-            gr.Warning('请限制输入音频在10s内，避免推理效果过低')
+        if info.num_frames / info.sample_rate > 15:
+            gr.Warning('请限制输入音频在15s内，避免推理效果过低')
             return (target_sr, default_data)
     # zero_shot mode only use prompt_wav prompt text
     if mode_checkbox_group in ['3s极速复刻']:
@@ -141,8 +141,8 @@ def generate_audio(tts_text, mode_checkbox_group, prompt_text, prompt_wav_upload
         if instruct_text != '':
             gr.Info('您正在使用3s极速复刻模式，instruct文本会被忽略！')
         info = torchaudio.info(prompt_wav)
-        if info.num_frames / info.sample_rate > 10:
-            gr.Warning('请限制输入音频在10s内，避免推理效果过低')
+        if info.num_frames / info.sample_rate > 15:
+            gr.Warning('请限制输入音频在15s内，避免推理效果过低')
             return (target_sr, default_data)
     if mode_checkbox_group == '3s极速复刻':
         logging.info('get zero_shot inference request')
