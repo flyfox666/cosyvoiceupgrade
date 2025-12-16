@@ -83,8 +83,8 @@ def prompt_wav_recognition(prompt_wav):
 def generate_audio(tts_text, mode_checkbox_group, prompt_text, prompt_wav_upload, prompt_wav_record, instruct_text,
                    seed, stream):
     stream = False
-    if len(tts_text) > 200:
-        gr.Warning('您输入的文字过长，请限制在200字以内')
+    if len(tts_text) > 500:
+        gr.Warning('您输入的文字过长，请限制在500字以内')
         return (target_sr, default_data)
     sft_dropdown, speed = '', 1.0
     if prompt_wav_upload is not None:
