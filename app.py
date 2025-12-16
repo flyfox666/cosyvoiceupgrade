@@ -52,6 +52,26 @@ def generate_seed():
         "value": seed
     }
 
+import regex
+
+def count_chars_and_words(text):
+    """
+    计算字符串长度，汉字算一个字符，英语单词算一个字符，标点不计入
+    """
+    # 移除所有标点符号（包括中文和英文标点）
+    # 这个正则表达式匹配常见的标点符号
+    punctuation_pattern = r'[\p{P}\p{S}\s]+'
+    text_no_punct = regex.sub(punctuation_pattern, ' ', text)
+    
+    # 分割字符串：汉字单独作为元素，英文单词作为整体
+    # \p{Han} 匹配所有汉字
+    # \p{Latin}+ 匹配拉丁字母序列（英文单词）
+    pattern = r'\p{Han}|\p{Latin}+'
+    
+    matches = regex.findall(pattern, text_no_punct, regex.UNICODE)
+    
+    return len(matches)
+
 top_db = 60
 hop_length = 220
 win_length = 440
@@ -83,8 +103,8 @@ def prompt_wav_recognition(prompt_wav):
 def generate_audio(tts_text, mode_checkbox_group, prompt_text, prompt_wav_upload, prompt_wav_record, instruct_text,
                    seed, stream):
     stream = False
-    if len(tts_text) > 500:
-        gr.Warning('您输入的文字过长，请限制在500字以内')
+    if count_chars_and_words(tts_text) > 200:
+        gr.Warning('您输入的文字过长，请限制在200字以内')
         return (target_sr, default_data)
     sft_dropdown, speed = '', 1.0
     if prompt_wav_upload is not None:
