@@ -4,6 +4,29 @@
 
 > **This is an enhanced version of the official CosyVoice repository with additional features and improvements for better user experience.**
 
+## ⚠️ Important: WSL Environment Recommended
+
+**We strongly recommend using WSL (Windows Subsystem for Linux) instead of native Windows.**
+
+### Why WSL?
+
+While a Windows-native version was previously developed, certain critical features had to be disabled due to compatibility issues:
+
+- ❌ **ttsfrd**: The text normalization package requires Linux-specific dependencies and cannot run natively on Windows
+- ❌ **SenseVoiceSmall**: The ASR (Automatic Speech Recognition) model has limited compatibility on Windows
+- ⚠️ **Reduced functionality**: Without these components, the Windows version offers a degraded experience
+
+### WSL Advantages:
+
+- ✅ **Full feature support**: All features including ttsfrd and SenseVoiceSmall work perfectly
+- ✅ **Better compatibility**: Native Linux environment ensures all dependencies work as expected
+- ✅ **Easy setup**: WSL2 provides near-native Linux performance on Windows
+- ✅ **Shared file system**: Access your Windows files from WSL seamlessly
+
+**Installation Guide**: If you haven't set up WSL yet, follow the [official WSL installation guide](https://learn.microsoft.com/en-us/windows/wsl/install).
+
+---
+
 ## ✨ What's New in This Version
 
 ### 🎵 Voice Library Management System

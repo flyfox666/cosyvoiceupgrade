@@ -4,6 +4,29 @@
 
 > **这是官方CosyVoice仓库的增强版本，增加了额外的功能和改进，提供更好的用户体验。**
 
+## ⚠️ 重要提示：推荐使用 WSL 环境
+
+**我们强烈推荐使用 WSL (Windows Subsystem for Linux) 而不是原生 Windows 环境。**
+
+### 为什么使用 WSL？
+
+虽然之前开发过 Windows 原生版本，但由于兼容性问题，某些关键功能不得不被禁用：
+
+- ❌ **ttsfrd**：文本标准化包需要 Linux 特定依赖，无法在 Windows 上原生运行
+- ❌ **SenseVoiceSmall**：ASR（自动语音识别）模型在 Windows 上兼容性有限
+- ⚠️ **功能缺失**：缺少这些组件后，Windows 版本的体验大打折扣
+
+### WSL 的优势：
+
+- ✅ **完整功能支持**：包括 ttsfrd 和 SenseVoiceSmall 在内的所有功能都能完美运行
+- ✅ **更好的兼容性**：原生 Linux 环境确保所有依赖按预期工作
+- ✅ **简单设置**：WSL2 在 Windows 上提供接近原生的 Linux 性能
+- ✅ **共享文件系统**：可以从 WSL 无缝访问 Windows 文件
+
+**安装指南**：如果您还没有设置 WSL，请参考 [WSL 官方安装指南](https://learn.microsoft.com/zh-cn/windows/wsl/install)。
+
+---
+
 ## ✨ 本版本的新功能
 
 ### 🎵 音色库管理系统
