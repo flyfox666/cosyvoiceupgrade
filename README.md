@@ -1,6 +1,54 @@
 [![SVG Banners](https://svg-banners.vercel.app/api?type=origin&text1=CosyVoice🤠&text2=Text-to-Speech%20💖%20Large%20Language%20Model&width=800&height=210)](https://github.com/Akshay090/svg-banners)
 
-## 👉🏻 CosyVoice 👈🏻
+# 🚀 Enhanced Version - Key Improvements
+
+> **This is an enhanced version of the official CosyVoice repository with additional features and improvements for better user experience.**
+
+## ✨ What's New in This Version
+
+### 🎵 Voice Library Management System
+- **Save Custom Voices**: Save your favorite voice clones to a persistent library for reuse
+- **Easy Voice Loading**: Load previously saved voices without re-uploading audio files
+- **Voice Management**: Organize, rename, and delete voice profiles through the WebUI
+- **Folder-based Storage**: Each voice profile stored in `custom_voices/` directory with audio and metadata
+
+### 🎙️ Automatic Speech Recognition (ASR)
+- **Auto Text Extraction**: Automatically extract prompt text from uploaded audio files
+- **SenseVoiceSmall Integration**: Powered by FunASR's SenseVoiceSmall model
+- **Multi-language Support**: Supports Chinese, English, and other languages
+- **Time-saving**: No need to manually type prompt text for voice cloning
+
+### 🖥️ Enhanced WebUI (`app_local.py`)
+- **Improved Interface**: Better organized UI with voice library management panel
+- **Audio Post-processing**: Automatic audio enhancement and normalization
+- **Auto-launch**: Automatically opens in browser when started
+- **Detailed Logging**: Better debugging with comprehensive log output
+
+### 🔄 Additional Features
+- **Cache Management**: Intelligent model caching for faster subsequent inference
+- **Voice Migration Tool**: `migrate_voices.py` for easy voice library migration
+- **API Server**: Enhanced FastAPI-based server with additional endpoints
+- **Better Documentation**: Comprehensive README with clear setup instructions
+
+### 📂 Project Structure Improvements
+```
+├── custom_voices/          # NEW: Voice library storage
+├── voice_manager.py        # NEW: Voice management module
+├── app_local.py            # ENHANCED: WebUI with voice library
+├── cache_manager.py        # NEW: Model cache management
+├── migrate_voices.py       # NEW: Voice migration utility
+└── start_all.py           # NEW: One-click startup script
+```
+
+## 📖 How to Use Enhanced Features
+
+1. **Voice Library**: In the WebUI, use the "🎵 音色库管理" accordion to save/load/delete custom voices
+2. **ASR**: Upload an audio file and the prompt text will be automatically recognized
+3. **Start Enhanced WebUI**: Use `python app_local.py` instead of `webui.py` for all features
+
+---
+
+## 👉🏻 Official CosyVoice Information 👈🏻
 
 **Fun-CosyVoice 3.0**: [Demos](https://funaudiollm.github.io/cosyvoice3/); [Paper](https://arxiv.org/abs/2505.17589); [Modelscope](https://www.modelscope.cn/studios/FunAudioLLM/Fun-CosyVoice3-0.5B); [CV3-Eval](https://github.com/FunAudioLLM/CV3-Eval)
 
@@ -110,6 +158,10 @@
 
 We strongly recommend that you download our pretrained `Fun-CosyVoice3-0.5B` `CosyVoice2-0.5B` `CosyVoice-300M` `CosyVoice-300M-SFT` `CosyVoice-300M-Instruct` model and `CosyVoice-ttsfrd` resource.
 
+**All pretrained models should be placed in the `pretrained_models/` directory.**
+
+#### Method 1: Download using Python SDK (Recommended)
+
 ``` python
 # SDK模型下载
 from modelscope import snapshot_download
@@ -119,6 +171,36 @@ snapshot_download('iic/CosyVoice-300M', local_dir='pretrained_models/CosyVoice-3
 snapshot_download('iic/CosyVoice-300M-SFT', local_dir='pretrained_models/CosyVoice-300M-SFT')
 snapshot_download('iic/CosyVoice-300M-Instruct', local_dir='pretrained_models/CosyVoice-300M-Instruct')
 snapshot_download('iic/CosyVoice-ttsfrd', local_dir='pretrained_models/CosyVoice-ttsfrd')
+```
+
+#### Method 2: Manual Download
+
+You can also manually download models from:
+- **ModelScope**: 
+  - [Fun-CosyVoice3-0.5B-2512](https://www.modelscope.cn/models/FunAudioLLM/Fun-CosyVoice3-0.5B-2512)
+  - [CosyVoice2-0.5B](https://www.modelscope.cn/models/iic/CosyVoice2-0.5B)
+  - [CosyVoice-300M](https://www.modelscope.cn/models/iic/CosyVoice-300M)
+  - [CosyVoice-300M-SFT](https://www.modelscope.cn/models/iic/CosyVoice-300M-SFT)
+  - [CosyVoice-300M-Instruct](https://www.modelscope.cn/models/iic/CosyVoice-300M-Instruct)
+  - [CosyVoice-ttsfrd](https://www.modelscope.cn/models/iic/CosyVoice-ttsfrd)
+- **HuggingFace**: [FunAudioLLM Organization](https://huggingface.co/FunAudioLLM)
+
+After download, place them in the `pretrained_models/` directory with the following structure:
+```
+pretrained_models/
+├── Fun-CosyVoice3-0.5B/
+├── CosyVoice2-0.5B/
+├── CosyVoice-300M/
+├── CosyVoice-300M-SFT/
+├── CosyVoice-300M-Instruct/
+└── CosyVoice-ttsfrd/
+```
+
+#### Optional: ASR Model for Audio Recognition
+
+For automatic audio recognition in the WebUI, you can download the SenseVoiceSmall model:
+``` python
+snapshot_download('iic/SenseVoiceSmall', local_dir='pretrained_models/SenseVoiceSmall')
 ```
 
 Optionally, you can unzip `ttsfrd` resource and install `ttsfrd` package for better text normalization performance.
@@ -132,7 +214,47 @@ pip install ttsfrd_dependency-0.1-py3-none-any.whl
 pip install ttsfrd-0.4.2-cp310-cp310-linux_x86_64.whl
 ```
 
-### Basic Usage
+## Project Structure
+
+After installation and model download, your project structure should look like this:
+
+```
+CosyVoice/
+├── pretrained_models/          # Pretrained models directory
+│   ├── Fun-CosyVoice3-0.5B/   # Fun-CosyVoice 3.0 model
+│   ├── CosyVoice2-0.5B/       # CosyVoice 2.0 model
+│   ├── CosyVoice-300M/        # CosyVoice 1.0 base model
+│   ├── CosyVoice-300M-SFT/    # CosyVoice SFT model
+│   ├── CosyVoice-300M-Instruct/ # CosyVoice Instruct model
+│   ├── CosyVoice-ttsfrd/      # Text normalization resources
+│   └── SenseVoiceSmall/       # (Optional) ASR model
+├── custom_voices/              # Custom voice library storage
+│   └── [voice_id]/            # Each custom voice has its own folder
+│       ├── audio.wav          # Voice audio sample
+│       └── metadata.json      # Voice metadata (name, text, etc.)
+├── cosyvoice/                  # Core CosyVoice library
+├── third_party/                # Third-party dependencies
+├── webui.py                    # Official web interface
+├── app_local.py                # Enhanced local web interface with voice library
+├── voice_manager.py            # Voice library management module
+└── requirements.txt            # Python dependencies
+```
+
+### About `custom_voices` Folder
+
+The `custom_voices/` directory is used to store your custom voice profiles created through the WebUI. Each voice profile contains:
+- **Audio sample**: A reference audio file (WAV format) for voice cloning
+- **Metadata**: Voice name, prompt text, creation time, and voice ID
+
+You can:
+- Save custom voices from the WebUI for later reuse
+- Load saved voices without re-uploading audio files
+- Manage (delete) unwanted voice profiles
+- Share voice profiles by copying the voice folder
+
+**Note**: This folder is excluded from Git (via `.gitignore`) to keep your repository clean.
+
+## Basic Usage
 
 We strongly recommend using `Fun-CosyVoice3-0.5B` for better performance.
 Follow the code in `example.py` for detailed usage of each model.
@@ -156,12 +278,23 @@ python vllm_example.py
 
 You can use our web demo page to get familiar with CosyVoice quickly.
 
-Please see the demo website for details.
-
+**Option 1: Official WebUI**
 ``` python
 # change iic/CosyVoice-300M-SFT for sft inference, or iic/CosyVoice-300M-Instruct for instruct inference
 python3 webui.py --port 50000 --model_dir pretrained_models/CosyVoice-300M
 ```
+
+**Option 2: Enhanced Local WebUI (with Voice Library)**
+``` python
+# Recommended: Use app_local.py for voice library management and ASR features
+python3 app_local.py --port 50000 --model_dir pretrained_models/Fun-CosyVoice3-0.5B
+```
+
+The enhanced WebUI (`app_local.py`) includes:
+- Voice library management (save/load/delete custom voices)
+- Automatic speech recognition for prompt audio
+- Audio post-processing and enhancement
+- Auto-launch in browser
 
 #### Advanced Usage
 
