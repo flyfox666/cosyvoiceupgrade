@@ -25,7 +25,8 @@ import torch
 
 IGNORE_ID = -1
 
-instruct_list = ["You are a helpful assistant. 请用广东话表达。<|endofprompt|>",
+instruct_list = ["You are a helpful assistant. 请用普通话表达。<|endofprompt|>",
+                 "You are a helpful assistant. 请用广东话表达。<|endofprompt|>",
                  "You are a helpful assistant. 请用东北话表达。<|endofprompt|>",
                  "You are a helpful assistant. 请用甘肃话表达。<|endofprompt|>",
                  "You are a helpful assistant. 请用贵州话表达。<|endofprompt|>",
@@ -42,6 +43,9 @@ instruct_list = ["You are a helpful assistant. 请用广东话表达。<|endofpr
                  "You are a helpful assistant. 请用四川话表达。<|endofprompt|>",
                  "You are a helpful assistant. 请用天津话表达。<|endofprompt|>",
                  "You are a helpful assistant. 请用云南话表达。<|endofprompt|>",
+                 "You are a helpful assistant. 请用日语表达。<|endofprompt|>",
+                 "You are a helpful assistant. 请用英语表达。<|endofprompt|>",
+                 "You are a helpful assistant. 请用德语表达。<|endofprompt|>",
                  "You are a helpful assistant. Please say a sentence as loudly as possible.<|endofprompt|>",
                  "You are a helpful assistant. Please say a sentence in a very soft voice.<|endofprompt|>",
                  "You are a helpful assistant. 请用尽可能慢地语速说一句话。<|endofprompt|>",

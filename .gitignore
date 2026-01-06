@@ -1,1 +1,12 @@
 *.pyc
+
+# Ignore contents of pretrained_models but keep folder structure
+pretrained_models/*
+!pretrained_models/.gitkeep
+
+# Ignore contents of custom_voices but keep folder structure
+custom_voices/*
+!custom_voices/.gitkeep
+
+# Completely ignore custom_voices_backup (no folder structure needed)
+custom_voices_backup/

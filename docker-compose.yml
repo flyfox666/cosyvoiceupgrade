@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  cosyvoice:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cosyvoice-server
+    ports:
+      - "50000:50000"  # WebUI
+      - "81889:81889"  # API Server
+    volumes:
+      # Persist custom voices
+      - ./custom_voices:/app/custom_voices
+      # Mount pretrained models (adjust path as needed)
+      - ./pretrained_models:/app/pretrained_models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    environment:
+      - MODEL_DIR=/app/pretrained_models/Fun-CosyVoice3-0.5B
+      - WEBUI_PORT=50000
+      - API_PORT=81889
+      - CUDA_VISIBLE_DEVICES=0
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:81889/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s

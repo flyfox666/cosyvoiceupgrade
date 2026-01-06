@@ -27,11 +27,11 @@ sys.path.append('{}/third_party/Matcha-TTS'.format(ROOT_DIR))
 
 from modelscope import snapshot_download, HubApi
 
-api = HubApi()
-_, cookies = api.login(access_token=os.environ['token'])
-snapshot_download('FunAudioLLM/Fun-CosyVoice3-0.5B-2512', local_dir='pretrained_models/Fun-CosyVoice3-0.5B', cookies=cookies)
-snapshot_download('iic/SenseVoiceSmall', local_dir='pretrained_models/SenseVoiceSmall', cookies=cookies)
-snapshot_download('iic/CosyVoice-ttsfrd', local_dir='pretrained_models/CosyVoice-ttsfrd', cookies=cookies)
+# api = HubApi()
+# _, cookies = api.login(access_token=os.environ['token'])
+snapshot_download('FunAudioLLM/Fun-CosyVoice3-0.5B-2512', local_dir='pretrained_models/Fun-CosyVoice3-0.5B')
+snapshot_download('iic/SenseVoiceSmall', local_dir='pretrained_models/SenseVoiceSmall')
+snapshot_download('iic/CosyVoice-ttsfrd', local_dir='pretrained_models/CosyVoice-ttsfrd')
 os.system('cd pretrained_models/CosyVoice-ttsfrd/ && pip install ttsfrd_dependency-0.1-py3-none-any.whl && pip install ttsfrd-0.4.2-cp310-cp310-linux_x86_64.whl && apt install -y unzip && rm -rf resource && unzip resource.zip -d .')
 
 from cosyvoice.cli.cosyvoice import AutoModel as CosyVoiceAutoModel
@@ -98,6 +98,7 @@ def prompt_wav_recognition(prompt_wav):
                              use_itn=True,
     )
     text = res[0]["text"].split('|>')[-1]
+    torch.cuda.empty_cache()
     return text
 
 def generate_audio(tts_text, mode_checkbox_group, prompt_text, prompt_wav_upload, prompt_wav_record, instruct_text,
@@ -199,7 +200,7 @@ def main():
         mode_checkbox_group.change(fn=change_instruction, inputs=[mode_checkbox_group], outputs=[instruction_text])
         prompt_wav_upload.change(fn=prompt_wav_recognition, inputs=[prompt_wav_upload], outputs=[prompt_text])
         prompt_wav_record.change(fn=prompt_wav_recognition, inputs=[prompt_wav_record], outputs=[prompt_text])
-    demo.queue(default_concurrency_limit=4).launch(server_port=50000, server_name='0.0.0.0')
+    demo.queue(default_concurrency_limit=3).launch(server_port=50000, server_name='0.0.0.0')
 
 
 if __name__ == '__main__':
