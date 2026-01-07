@@ -1,8 +1,12 @@
+[English](README.md) | [简体中文](README_zh.md)
+
 [![SVG Banners](https://svg-banners.vercel.app/api?type=origin&text1=CosyVoice🤠&text2=Text-to-Speech%20💖%20Large%20Language%20Model&width=800&height=210)](https://github.com/Akshay090/svg-banners)
 
 # 🚀 增强版本 - 主要改进
 
-> **这是官方CosyVoice仓库的增强版本，增加了额外的功能和改进，提供更好的用户体验。**
+> **这是官方 [CosyVoice 仓库](https://github.com/FunAudioLLM/CosyVoice)的增强版本，增加了额外的功能和改进，提供更好的用户体验。**
+>
+> **原项目地址**: https://github.com/FunAudioLLM/CosyVoice
 
 ## ⚠️ 重要提示：推荐使用 WSL 环境
 
